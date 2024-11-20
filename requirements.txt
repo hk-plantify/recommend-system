@@ -1,0 +1,9 @@
+ipykernel
+pandas
+scikit-learn
+python-dotenv
+openai
+langchain
+pydantic
+uvicorn
+fastapi
