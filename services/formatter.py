@@ -18,9 +18,6 @@ llm = ChatOpenAI(
 
 
 def extract_and_format_benefits_with_llm_batch(cards_info, category):
-    """
-    여러 카드 정보를 한 번에 처리하는 LLM 호출 함수.
-    """
     system_prompt = """
     당신은 카드 정보를 엄격한 JSON 형식으로 작성하는 전문가입니다. 
     모든 응답은 제공된 JSON 구조를 엄격히 준수해야 하며, 추가 텍스트나 포맷을 포함하지 마십시오.
