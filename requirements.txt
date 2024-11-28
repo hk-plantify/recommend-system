@@ -7,3 +7,5 @@ langchain
 pydantic
 uvicorn
 fastapi
+sentence_transformers
+langchain-community
