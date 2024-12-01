@@ -13,54 +13,60 @@ llm = ChatOpenAI(
     model_name="gpt-4o-mini",
     temperature=0,
     streaming=True,
-    callbacks=[StreamingStdOutCallbackHandler()]
+    callbacks=[StreamingStdOutCallbackHandler()],
+    max_tokens=512
 )
 
-
 def extract_and_format_benefits_with_llm_batch(cards_info, category):
+    # 시스템 메시지
     system_prompt = """
-    당신은 카드 정보를 엄격한 JSON 형식으로 작성하는 전문가입니다. 
-    모든 응답은 제공된 JSON 구조를 엄격히 준수해야 하며, 추가 텍스트나 포맷을 포함하지 마십시오.
+    당신은 카드 정보를 분석하는 전문가입니다.
+    제공된 카드 정보에서 해당 카테고리와 관련된 핵심 혜택을 추출하세요.
     """
 
-    # 각 카드 정보를 프롬프트에 추가
+    # 카드 정보를 간결히 표현
     cards_prompt = "\n".join([
-        f"""
-        카드 정보 {i + 1}:
-        - Card Name: {card['name']}
-        - Benefit Description: {card['combined_benefits']}
-        - Input Category: {category}
-        - Assume a spending amount of 10,000 KRW for calculating remaining benefit.
-        """
+        f"카드 {i + 1}: 혜택: {card['title']} | 카테고리: {category}"
         for i, card in enumerate(cards_info)
     ])
 
+    # 프롬프트 작성
     prompt = f"""
-    아래 카드 정보들을 각각 엄격한 JSON 형식으로 변환하세요:
-    ### JSON Structure
-    {{
-        "card_name": "string",
-        "discount_target": "string",
-        "discount_type": "string",
-        "remaining_benefit": "string"
-    }}
+    카테고리: {category}
+    추가적인 텍스트, 포맷(예: 마크다운), 설명은 포함하지 마십시오. 순수한 JSON 데이터만 반환하세요.
+    카드 정보:
+    {cards_prompt}
+
+    응답 형식:
+    [
+        {{
+            "discount_target": "string",
+            "discount_type": "string",
+            "benefit_point": "int"
+        }},
+        ...
+    ]
 
     **요구 사항**:
-    1. `discount_target`: 카드의 혜택 설명 중 해당 카테고리와 관련된 할인 대상(예: "대중교통", "택시")만 포함하세요.
-    2. `discount_type`: `discount_target`과 관련된 할인 내역을 입력하세요(예: "10% 할인", "5% 캐시백").
-    3. `remaining_benefit`: 소비 금액 10,000원 기준으로 계산된 할인 금액을 입력하세요. (예: 10% 할인 -> 1,000원, 5% 캐시백 -> 500원).
-    4. 다른 카테고리의 정보는 무시하고, 제공된 `Input Category`에 따라 가장 관련 있는 혜택만 추출하세요.
-
-    {cards_prompt}
+    1. 각 카드에 대해 명시된 JSON 구조를 따르는 객체를 반환하세요.
+    2. `discount_target`: 해당 카테고리와 관련된 할인 대상을 입력하세요.
+    3. `discount_type`: `discount_target`과 관련된 할인 내역을 입력하세요.
+    4. `benefit_point`: 소비 금액 10,000원을 기준으로 계산된 혜택 금액을 입력하세요.
     """
 
-    # LLM 호출
     response = llm.invoke([SystemMessage(content=system_prompt), HumanMessage(content=prompt)])
-    
-    # JSON 응답 파싱
+
     try:
-        # LLM이 반환한 응답이 여러 JSON 객체일 경우 배열로 반환되도록 설계
-        responses = json.loads(response.content)
-        return responses
+        benefits = json.loads(response.content)
+
+        formatted_results = []
+        for card, benefit in zip(cards_info, benefits):
+            formatted_results.append({
+                "card_name": card["name"],
+                "card_image": card["image"],
+                **benefit
+            })
+
+        return formatted_results
     except json.JSONDecodeError:
         return [{"error": "Failed to parse JSON response", "raw_response": response.content}]
