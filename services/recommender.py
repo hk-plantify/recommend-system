@@ -1,10 +1,12 @@
 import os
 import numpy as np
 import pandas as pd
+from sqlalchemy import create_engine
 from sklearn.metrics.pairwise import cosine_similarity
 from models.embedding_model import embedding_model
 from services.formatter import extract_and_format_benefits_with_llm_batch
 
+# DB에서 저장된 데이터를 가져와야함
 card_data = pd.read_csv('.tmp/embedding_card_data.csv')
 embeddings_matrix = np.load('.tmp/description_matrix.npy')
 category_embeddings_path = '.tmp/category_embeddings.npy'

@@ -1,7 +1,6 @@
 import json
 from langchain.schema import HumanMessage, SystemMessage
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
-
 from langchain.chat_models.openai import ChatOpenAI
 from dotenv import load_dotenv
 import os
