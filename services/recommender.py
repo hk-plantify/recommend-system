@@ -12,11 +12,18 @@ from services.formatter import extract_and_format_benefits_with_llm_batch
 # AWS S3 설정
 S3_BUCKET = "hk-project-6-bucket"
 
+s3_client = boto3.client(
+    's3',
+    aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+    aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+    region_name="ap-northeast-1"
+)
+
 def load_env_from_s3(bucket_name, key):
     """
     S3에서 .env 파일을 다운로드하고 환경 변수로 설정
     """
-    response = boto3.client('s3').get_object(Bucket=bucket_name, Key=key)
+    response = s3_client.get_object(Bucket=bucket_name, Key=key)
     env_content = response['Body'].read().decode('utf-8')  # Bytes 데이터를 문자열로 변환
 
     # .env 파일 내용 파싱
@@ -26,14 +33,6 @@ def load_env_from_s3(bucket_name, key):
 
 # .env 파일 로드
 load_env_from_s3(S3_BUCKET, "env-files/.env")
-
-# S3 클라이언트 생성 (지연 생성)
-s3_client = boto3.client(
-    's3',
-    aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
-    aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
-    region_name="ap-northeast-1"
-)
 
 # S3 파일 다운로드 함수
 def download_from_s3(bucket_name, key):
