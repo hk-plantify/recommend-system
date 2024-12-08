@@ -1,7 +1,7 @@
 import os
 import boto3
 from io import BytesIO, StringIO
-from dotenv import dotenv_values
+from dotenv import load_dotenv
 from langchain.schema import HumanMessage, SystemMessage
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain_community.chat_models.openai import ChatOpenAI  # 업데이트된 import
@@ -16,17 +16,20 @@ s3_client = boto3.client(
     region_name="ap-northeast-1"
 )
 
-def load_env_from_s3(bucket_name, key):
+def load_env_from_s3(bucket_name, key, local_env_path=".env"):
     """
     S3에서 .env 파일을 다운로드하고 환경 변수로 설정
     """
+    # S3에서 .env 파일 다운로드
     response = s3_client.get_object(Bucket=bucket_name, Key=key)
     env_content = response['Body'].read().decode('utf-8')  # Bytes 데이터를 문자열로 변환
 
-    # .env 파일 내용 파싱
-    env_vars = dotenv_values(stream=StringIO(env_content))  # StringIO로 래핑하여 dotenv_values로 파싱
-    for key, value in env_vars.items():
-        os.environ[key] = value  # 환경 변수로 설정
+    # .env 파일을 로컬에 저장
+    with open(local_env_path, "w") as env_file:
+        env_file.write(env_content)
+
+    # .env 파일 로드하여 환경 변수로 설정
+    load_dotenv(local_env_path)
 
 # .env 파일 로드
 load_env_from_s3(S3_BUCKET, "env-files/.env")
