@@ -9,3 +9,4 @@ uvicorn
 fastapi
 sentence_transformers
 langchain-community
+boto3
