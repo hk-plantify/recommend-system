@@ -6,7 +6,6 @@ from io import BytesIO, StringIO
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sklearn.metrics.pairwise import cosine_similarity
-from models.embedding_model import embedding_model
 from services.formatter import extract_and_format_benefits_with_llm_batch
 
 # AWS S3 설정
@@ -23,15 +22,12 @@ def load_env_from_s3(bucket_name, key, local_env_path=".env"):
     """
     S3에서 .env 파일을 다운로드하고 환경 변수로 설정
     """
-    # S3에서 .env 파일 다운로드
     response = s3_client.get_object(Bucket=bucket_name, Key=key)
     env_content = response['Body'].read().decode('utf-8')  # Bytes 데이터를 문자열로 변환
 
-    # .env 파일을 로컬에 저장
     with open(local_env_path, "w") as env_file:
         env_file.write(env_content)
 
-    # .env 파일 로드하여 환경 변수로 설정
     load_dotenv(local_env_path)
 
 # .env 파일 로드
@@ -59,21 +55,10 @@ embeddings_matrix_bytes = download_from_s3(S3_BUCKET, description_matrix_key)
 embeddings_matrix_bytes.seek(0)
 embeddings_matrix = np.load(embeddings_matrix_bytes)
 
-# 카테고리 임베딩 확인 및 로드
-try:
-    category_embeddings_bytes = download_from_s3(S3_BUCKET, category_embeddings_key)
-    category_embeddings_bytes.seek(0)
-    category_embeddings = np.load(category_embeddings_bytes)
-except s3_client.exceptions.NoSuchKey:
-    # S3에서 파일이 없으면 새로 생성
-    categories = card_data['category'].unique()
-    category_embeddings = embedding_model.encode(categories, batch_size=32)
-
-    # 생성된 데이터를 S3에 업로드
-    buffer = BytesIO()
-    np.save(buffer, category_embeddings)
-    buffer.seek(0)
-    s3_client.put_object(Bucket=S3_BUCKET, Key=category_embeddings_key, Body=buffer.getvalue())
+# 카테고리 임베딩 로드
+category_embeddings_bytes = download_from_s3(S3_BUCKET, category_embeddings_key)
+category_embeddings_bytes.seek(0)
+category_embeddings = np.load(category_embeddings_bytes)
 
 # 카테고리와 임베딩 매핑
 categories = card_data['category'].unique()
