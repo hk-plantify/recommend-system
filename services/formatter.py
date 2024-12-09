@@ -1,6 +1,5 @@
 import os
 import boto3
-from io import BytesIO, StringIO
 from dotenv import load_dotenv
 from langchain.schema import HumanMessage, SystemMessage
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
