@@ -19,11 +19,12 @@ class RecommendRequest(BaseModel):
     category: str
     top_n: int = 5
 
-@app.get("/healthz")
+# 기준 경로 /v1/recommend
+@app.get("/v1/recommend/healthz")
 def health_check():
     return {"status": "ok"}
 
-@app.get("/categories")
+@app.get("/v1/recommend/categories")
 def get_categories():
     try:
         categories = get_available_categories()
@@ -31,7 +32,7 @@ def get_categories():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch categories: {str(e)}")
 
-@app.post("/recommend")
+@app.post("/v1/recommend/cards")
 def recommend_cards(request: RecommendRequest):
     try:
         recommendation_result = recommend_cards_by_category(
