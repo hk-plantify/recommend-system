@@ -19,6 +19,10 @@ class RecommendRequest(BaseModel):
     category: str
     top_n: int = 5
 
+@app.get("/healthz")
+def health_check():
+    return {"status": "ok"}
+
 @app.get("/categories")
 def get_categories():
     try:
