@@ -19,6 +19,10 @@ class RecommendRequest(BaseModel):
     category: str
     top_n: int = 5
 
+@app.get("/")
+def root():
+    return {"message": "Welcome to the Recommendation API. Use /v1/recommend for API access."}
+
 # 기준 경로 /v1/recommend
 @app.get("/v1/recommend/healthz")
 def health_check():
