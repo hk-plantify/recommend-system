@@ -58,7 +58,8 @@ jobs:
       id: version
       run: |
         # Create a unique version tag using the short commit SHA
-        echo "VERSION_TAG=$(date +%Y%m%d%H%M)-${{ github.sha::0:8 }}" >> $GITHUB_ENV
+        SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-8)
+        echo "VERSION_TAG=$(date +%Y%m%d%H%M)-${SHORT_SHA}" >> $GITHUB_ENV
 
     - name: Build and tag Docker image
       run: |
