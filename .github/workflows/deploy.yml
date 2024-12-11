@@ -54,10 +54,20 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
+    - name: Extract version tag
+      id: version
+      run: |
+        # Create a unique version tag using the short commit SHA
+        echo "VERSION_TAG=$(date +%Y%m%d%H%M)-${{ github.sha::0:8 }}" >> $GITHUB_ENV
+
     - name: Build and tag Docker image
       run: |
+        # Build the Docker image with both the 'latest' and unique tags
         docker build . \
           --file Dockerfile \
-          --tag ${{ secrets.DOCKER_USERNAME }}/recommend-system:latest
+          --tag ${{ secrets.DOCKER_USERNAME }}/recommend-system:latest \
+          --tag ${{ secrets.DOCKER_USERNAME }}/recommend-system:${{ env.VERSION_TAG }}
 
+        # Push both tags to Docker Hub
         docker push ${{ secrets.DOCKER_USERNAME }}/recommend-system:latest
+        docker push ${{ secrets.DOCKER_USERNAME }}/recommend-system:${{ env.VERSION_TAG }}
