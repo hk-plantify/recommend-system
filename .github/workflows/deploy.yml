@@ -42,7 +42,7 @@ jobs:
           aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws_region: ${{ env.AWS_REGION }}
-    
+
     - name: Verify .env file
       run: |
         echo "Checking .env file..."
@@ -53,28 +53,11 @@ jobs:
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
-    
+
     - name: Build and tag Docker image
       run: |
-        # Generate simplified tags
-        BUILD_NUMBER=${{ github.run_number }} # Incremental build number
-        
-        # Build image with multiple tags
         docker build . \
           --file Dockerfile \
-          --tag ${{ secrets.DOCKER_USERNAME }}/recommend-system:latest \
-          --tag ${{ secrets.DOCKER_USERNAME }}/recommend-system:$BUILD_NUMBER
+          --tag ${{ secrets.DOCKER_USERNAME }}/recommend-system:latest
 
-        # Store tags in environment
-        echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_ENV
-
-    - name: Push Docker image
-      run: |
         docker push ${{ secrets.DOCKER_USERNAME }}/recommend-system:latest
-        docker push ${{ secrets.DOCKER_USERNAME }}/recommend-system:${{ env.BUILD_NUMBER }}
-
-    - name: Output pushed tags
-      run: |
-        echo "Pushed Docker image tags:"
-        echo "  - latest"
-        echo "  - ${{ env.BUILD_NUMBER }}"
