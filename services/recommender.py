@@ -8,7 +8,6 @@ from sqlalchemy import create_engine
 from sklearn.metrics.pairwise import cosine_similarity
 from services.formatter import extract_and_format_benefits_with_llm_batch
 
-# AWS S3 설정
 S3_BUCKET = "hk-project-6-bucket"
 
 s3_client = boto3.client(
