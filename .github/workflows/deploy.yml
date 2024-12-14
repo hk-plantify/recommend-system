@@ -66,9 +66,7 @@ jobs:
         # Build the Docker image with both the 'latest' and unique tags
         docker build . \
           --file Dockerfile \
-          --tag ${{ secrets.DOCKER_USERNAME }}/recommend-system:latest \
           --tag ${{ secrets.DOCKER_USERNAME }}/recommend-system:${{ env.VERSION_TAG }}
 
         # Push both tags to Docker Hub
-        docker push ${{ secrets.DOCKER_USERNAME }}/recommend-system:latest
         docker push ${{ secrets.DOCKER_USERNAME }}/recommend-system:${{ env.VERSION_TAG }}
