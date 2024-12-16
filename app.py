@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from services.recommender import recommend_cards_by_category, get_available_categories
-from services.formatter import extract_and_format_benefits_with_llm_batch
+from common.response.response import ApiResponse
 
 app = FastAPI()
 
@@ -35,14 +35,14 @@ def get_categories():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch categories: {str(e)}")
 
-@app.post("/v1/recommend/cards")
+@app.post("/v1/recommend/cards", response_model=ApiResponse[dict])
 def recommend_cards(request: RecommendRequest):
     try:
         recommendation_result = recommend_cards_by_category(
             category=request.category, top_n=request.top_n
         )
 
-        return recommendation_result
+        return ApiResponse.ok(data=recommendation_result)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
